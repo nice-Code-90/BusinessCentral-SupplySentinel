@@ -8,10 +8,17 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.12.47" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SupplySentinel.Infrastructure.REST\SupplySentinel.Infrastructure.REST.csproj" />
+    <ProjectReference Include="..\SupplySentinel.Application\SupplySentinel.Application.csproj" />
+    <ProjectReference Include="..\SupplySentinel.Infrastructure\SupplySentinel.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>
