@@ -54,7 +54,7 @@ The Agent is equipped with a specific set of tools defined in the Application an
 - **Inference**: Model-agnostic (Current: Cerebras gpt-oss-120b)
 - **ERP Integration**: D365 Business Central API v2.0
 - **Real-time UI**: SignalR
-- **Frontend**: Angular 21+ 
+- **Frontend**: Angular 21+
 
 ## ⚙️ Configuration & Model Swapping
 
@@ -64,7 +64,7 @@ Because we use the Microsoft Agent Framework, switching the LLM provider is a si
 {
   "AgentConfiguration": {
     "Provider": "Cerebras",
-    "Model": "llama-3.3-70b",
+    "Model": "gpt-oss-120b",
     "Instructions": "You are a procurement specialist..."
   },
   "BusinessCentral": {

@@ -1,3 +1,7 @@
 <Solution>
   <Project Path="SupplySentinel.Api/SupplySentinel.Api.csproj" />
+  <Project Path="SupplySentinel.Application/SupplySentinel.Application.csproj" />
+  <Project Path="SupplySentinel.Domain/SupplySentinel.Domain.csproj" />
+  <Project Path="SupplySentinel.Infrastructure.REST/SupplySentinel.Infrastructure.REST.csproj" />
+  <Project Path="SupplySentinel.Infrastructure/SupplySentinel.Infrastructure.csproj" />
 </Solution>
