@@ -1,6 +1,6 @@
 # SupplySentinel
 
-SupplySentinel is a modular procurement and inventory orchestrator designed to synchronize unstructured external supplier data (PDF, XLSX) with Microsoft Dynamics 365 Business Central.
+SupplySentinel is a modular procurement orchestrator designed to synchronize unstructured external supplier data (PDF, XLSX) with Microsoft Dynamics 365 Business Central.
 
 The system is built on .NET 10 and powered by the Microsoft Agent Framework. By leveraging an agentic "brain," the system autonomously decides how to parse documents, resolve data conflicts, and synchronize with the ERP through a robust Tool-calling architecture.
 
@@ -21,7 +21,7 @@ SupplySentinel follows Clean Architecture principles, decoupled into five specia
   The dedicated integration layer for D365 Business Central. It implements the RESTful Tools that the Agent calls to read/write ERP data.
 
 - **SupplySentinel.Api**
-  The host project (ASP.NET Core 10). It runs the Background Worker for proactive inventory polling and hosts SignalR Hubs for real-time feedback to the UI.
+  The host project (ASP.NET Core 10). It hosts SignalR Hubs for real-time feedback to the UI.
 
 ## 🧠 AI Strategy: Microsoft Agent Framework
 
@@ -41,10 +41,10 @@ The Agent is equipped with a specific set of tools defined in the Application an
 
 ## 🔄 Agentic Workflow
 
-1. **Ingestion & Trigger**: The system detects a new file or an inventory dip (< threshold) via the Background Worker.
+1. **Ingestion & Trigger**: The system detects a new file uploaded by the user.
 2. **Analysis**: The AIAgent initializes and calls the `DocumentReaderTool` and `InterpretationTool` to understand the supplier's offering.
 3. **Cross-Reference**: The Agent autonomously calls the `ERPComparisonTool` to pull the "Source of Truth" from Business Central.
-4. **Conflict Resolution**: If the Agent identifies a lower price or a stock emergency, it pushes a notification via SignalR.
+4. **Conflict Resolution**: If the Agent identifies a price discrepancy (increase or decrease), it pushes a notification via SignalR.
 5. **Execution**: Upon user approval, the Agent finalizes the workflow by calling the `BCDataSyncTool` to update the ERP.
 
 ## ⚡ Tech Stack

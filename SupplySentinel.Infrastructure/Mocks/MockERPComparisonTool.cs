@@ -9,7 +9,7 @@ public class MockERPComparisonTool : IERPComparisonTool
     {
         if (sku == "SKU-123")
         {
-            return Task.FromResult<Item?>(new Item(Guid.NewGuid(), "SKU-123", "Mock Item Description", "PCS", 10, 5));
+            return Task.FromResult<Item?>(new Item(Guid.NewGuid(), "SKU-123", "Mock Item Description", "PCS"));
         }
         return Task.FromResult<Item?>(null);
     }
