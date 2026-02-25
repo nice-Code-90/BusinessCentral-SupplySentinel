@@ -17,13 +17,12 @@ public class DocumentsController : ControllerBase
     }
 
     [HttpPost("analyze")]
-    public async Task<IActionResult> AnalyzeDocument([FromBody] Guid documentId)
+    public async Task<IActionResult> AnalyzeDocument([FromBody] AnalyzeSupplierDocumentCommand command)
     {
-        var command = new AnalyzeSupplierDocumentCommand(documentId);
         Result result = await _sender.Send(command);
 
         if (result.IsFailure) return BadRequest(result.Error);
 
-        return Ok(new { Message = "Document analysis started", DocumentId = documentId });
+        return Ok(new { Message = "Document analysis started", DocumentId = command.DocumentId });
     }
 }
