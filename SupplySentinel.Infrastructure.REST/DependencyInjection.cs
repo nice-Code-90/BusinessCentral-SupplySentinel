@@ -15,24 +15,19 @@ public static class DependencyInjection
 
         services.AddTransient<AuthenticationHandler>();
 
-        
-        services.AddHttpClient<IBCDataSyncTool, BCDataSyncTool>((serviceProvider, client) =>
-        {
-        
-            var options = serviceProvider.GetRequiredService<IOptions<BusinessCentralOptions>>().Value;
 
-            if (string.IsNullOrEmpty(options.ApiBaseUrl))
-                throw new InvalidOperationException("Business Central ApiBaseUrl is not configured.");
-
-            client.BaseAddress = new Uri(options.ApiBaseUrl);
-        })
-        .AddHttpMessageHandler<AuthenticationHandler>();
-
-        
         services.AddHttpClient<IERPComparisonTool, ERPComparisonTool>((serviceProvider, client) =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<BusinessCentralOptions>>().Value;
-            client.BaseAddress = new Uri(options.ApiBaseUrl);
+            client.BaseAddress = new Uri(options.FullApiUrl);
+        })
+        .AddHttpMessageHandler<AuthenticationHandler>();
+
+
+        services.AddHttpClient<IERPComparisonTool, ERPComparisonTool>((serviceProvider, client) =>
+        {
+            var options = serviceProvider.GetRequiredService<IOptions<BusinessCentralOptions>>().Value;
+            client.BaseAddress = new Uri(options.FullApiUrl);
         })
         .AddHttpMessageHandler<AuthenticationHandler>();
 
