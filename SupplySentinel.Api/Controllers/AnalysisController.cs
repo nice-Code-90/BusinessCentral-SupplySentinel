@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SupplySentinel.Application.Common.Interfaces;
 using SupplySentinel.Application.UseCases.AnalyzeSupplierDocument;
+using SupplySentinel.Application.UseCases.GetItems;
 using SupplySentinel.Domain.Abstractions;
 
 namespace SupplySentinel.Api.Controllers;
@@ -11,25 +11,27 @@ namespace SupplySentinel.Api.Controllers;
 public class AnalysisController : ControllerBase
 {
     private readonly ISender _sender;
-    private readonly IERPComparisonTool _erpComparisonTool;
 
-    public AnalysisController(ISender sender, IERPComparisonTool erpComparisonTool)
+    
+    public AnalysisController(ISender sender)
     {
         _sender = sender;
-        _erpComparisonTool = erpComparisonTool;
     }
 
+    
     [HttpGet("items")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetItems(CancellationToken cancellationToken)
     {
-        var result = await _erpComparisonTool.GetItemsAsync(cancellationToken);
+        
+        var result = await _sender.Send(new GetItemsQuery(), cancellationToken);
 
         return result.IsSuccess
             ? Ok(result.Value)
             : BadRequest(result.Error);
     }
+
     
     [HttpPost("analyze")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -50,9 +52,11 @@ public class AnalysisController : ControllerBase
             using var memoryStream = new MemoryStream();
             await file.CopyToAsync(memoryStream, ct);
 
+            
             var command = new AnalyzeSupplierDocumentCommand(
                 DocumentId: Guid.NewGuid(),
                 DocumentContent: memoryStream.ToArray());
+
             var result = await _sender.Send(command, ct);
 
             return result.IsSuccess
@@ -61,6 +65,7 @@ public class AnalysisController : ControllerBase
         }
         catch (OperationCanceledException)
         {
+     
             return StatusCode(StatusCodes.Status499ClientClosedRequest);
         }
     }
