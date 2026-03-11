@@ -18,4 +18,9 @@
     <ProjectReference Include="..\SupplySentinel.Domain\SupplySentinel.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Agent\" />
+    <Folder Include="Prompts\" />
+  </ItemGroup>
+
 </Project>

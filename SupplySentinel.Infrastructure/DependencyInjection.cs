@@ -10,11 +10,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        services.AddScoped<IAgentService, AgentService>();
-        services.AddScoped<IAgentProvider, AgentProvider>();
+        
+        services.AddScoped<IAgentProvider, AnalysisAgent>();
 
         services.AddScoped<IDocumentReaderTool, PdfDocumentReaderTool>();
-        services.AddScoped<IERPComparisonTool, MockERPComparisonTool>();
+
         services.AddScoped<IBCDataSyncTool, MockBCDataSyncTool>();
         
         return services;

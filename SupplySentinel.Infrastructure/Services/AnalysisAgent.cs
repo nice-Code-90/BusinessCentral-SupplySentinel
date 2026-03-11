@@ -2,17 +2,16 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.Configuration;
 using OpenAI;
 using OpenAI.Chat;
-using SupplySentinel.Application.Common.Interfaces;
 using SupplySentinel.Infrastructure.Prompts;
 using System.ClientModel;
 
 namespace SupplySentinel.Infrastructure.Services;
 
-public class AgentProvider : IAgentProvider
+public class AnalysisAgent : IAgentProvider
 {
     private readonly IConfiguration _configuration;
 
-    public AgentProvider(IConfiguration configuration)
+    public AnalysisAgent(IConfiguration configuration)
     {
         _configuration = configuration;
     }
