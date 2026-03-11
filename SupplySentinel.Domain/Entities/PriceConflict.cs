@@ -11,17 +11,13 @@ public class PriceConflict
     public Money CurrentErpPrice { get; private set; }
     public decimal VariancePercentage { get; private set; }
 
-    public PriceConflict(Guid id, Guid itemId, Guid vendorId, Money proposedPrice, Money currentErpPrice)
+    public PriceConflict(Guid id, Guid itemId, Guid vendorId, Money proposedPrice, Money currentErpPrice, decimal variancePercentage)
     {
         Id = id;
         ItemId = itemId;
         VendorId = vendorId;
         ProposedPrice = proposedPrice;
         CurrentErpPrice = currentErpPrice;
-
-        if (currentErpPrice.Amount != 0)
-        {
-            VariancePercentage = ((proposedPrice.Amount - currentErpPrice.Amount) / currentErpPrice.Amount) * 100;
-        }
+        VariancePercentage = variancePercentage;
     }
 }
