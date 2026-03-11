@@ -5,31 +5,36 @@ using SupplySentinel.Domain.Entities;
 using SupplySentinel.Domain.ValueObjects;
 using System.ClientModel;
 using OpenAI.Chat;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using OpenAI;
+using Microsoft.Agents.AI;
+using System.ComponentModel;
 
 namespace SupplySentinel.Infrastructure.Services;
 
 public class AgentService : IAgentService
 {
-    #region Private DTOs for Deserialization
+    #region Private DTOs for Structured Output
 
-    private class AgentSyncProposalDto
+    public class AgentSyncProposalDto
     {
         public AgentVendorDto Vendor { get; set; } = new();
         public List<AgentProposedItemDto> Items { get; set; } = [];
     }
 
-    private class AgentVendorDto
+    public class AgentVendorDto
     {
+        [Description("The official name of the supplier found on the document.")]
         public string Name { get; set; } = string.Empty;
     }
 
-    private class AgentProposedItemDto
+    public class AgentProposedItemDto
     {
+        [Description("The unique item code or SKU. Extract exactly, e.g. '1896-S'. DO NOT include the product name here.")]
         public string Sku { get; set; } = string.Empty;
+
+        [Description("The full description or name of the product.")]
         public string Description { get; set; } = string.Empty;
+
         public Money Price { get; set; } = new(0, string.Empty);
     }
 
@@ -52,7 +57,6 @@ public class AgentService : IAgentService
     public async Task<Result<List<PriceConflict>>> AnalyzeDocumentAsync(byte[] documentContent, CancellationToken cancellationToken)
     {
         using var stream = new MemoryStream(documentContent);
-
         string extractedText = await _documentReader.ExtractTextAsync(stream, "supplier_document.pdf", cancellationToken);
 
         if (string.IsNullOrWhiteSpace(extractedText))
@@ -68,29 +72,30 @@ public class AgentService : IAgentService
         }
 
         var proposalDto = proposalResult.Value;
-        Console.WriteLine($"[AgentService] AI found {proposalDto.Items.Count} items in the document.");
+        Console.WriteLine($"[AgentService] AI found {proposalDto.Items.Count} items.");
+
         var conflicts = new List<PriceConflict>();
 
-        
         foreach (var proposedItem in proposalDto.Items)
         {
-            Console.WriteLine($"[AgentService] Checking SKU: {proposedItem.Sku}");
-            var erpItemResult = await _erpComparer.GetItemBySkuAsync(proposedItem.Sku, cancellationToken);
+        
+            string cleanSku = proposedItem.Sku.Trim();
+            Console.WriteLine($"[AgentService] Checking SKU: {cleanSku}");
+
+            var erpItemResult = await _erpComparer.GetItemBySkuAsync(cleanSku, cancellationToken);
 
             if (erpItemResult.IsFailure)
             {
-                Console.WriteLine($"[AgentService] SKU search failed for '{proposedItem.Sku}': {erpItemResult.Error.Name}");
+                Console.WriteLine($"[AgentService] SKU search failed for '{cleanSku}': {erpItemResult.Error.Name}");
                 continue;
             }
 
             var erpItem = erpItemResult.Value;
-
             var erpPrice = new Money(erpItem.UnitCost, "EUR");
-
 
             if (proposedItem.Price.Amount != erpPrice.Amount && proposedItem.Price.Amount > 0)
             {
-                Console.WriteLine($"[AgentService] Conflict detected for SKU: {proposedItem.Sku}. Proposed: {proposedItem.Price.Amount}, ERP: {erpPrice.Amount}");
+                Console.WriteLine($"[AgentService] Conflict detected for {cleanSku}");
                 var conflict = new PriceConflict(
                     Guid.NewGuid(),
                     erpItem.Id,
@@ -98,7 +103,6 @@ public class AgentService : IAgentService
                     proposedItem.Price,
                     erpPrice
                 );
-
                 conflicts.Add(conflict);
             }
         }
@@ -114,53 +118,25 @@ public class AgentService : IAgentService
             var modelId = _configuration["LlmProvider:Model"] ?? "qwen-3-32b";
             var endpoint = _configuration["LlmProvider:Endpoint"] ?? "https://api.cerebras.ai/v1";
 
+            
             var openAIClient = new OpenAIClient(new ApiKeyCredential(apiKey), new OpenAIClientOptions { Endpoint = new Uri(endpoint) });
             var chatClient = openAIClient.GetChatClient(modelId);
 
-            var instructions = @"You are a procurement analysis agent. Your task is to extract data from supplier documents.
-Return ONLY a JSON object with this structure:
-{
-  ""vendor"": { ""name"": ""string"" },
-  ""items"": [
-    { ""sku"": ""string"", ""description"": ""string"", ""price"": { ""amount"": 0.0, ""currency"": ""string"" } }
-  ]
-}";
-
-            var chatHistory = new List<ChatMessage>
-            {
-                new SystemChatMessage(instructions),
-                new UserChatMessage(text)
-            };
-
-            var options = new ChatCompletionOptions
-            {
-                ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat(),
-                Temperature = 0.0f
-            };
-
-            var response = await chatClient.CompleteChatAsync(chatHistory, options, cancellationToken);
-            string rawJson = response.Value.Content[0].Text;
-
             
-            if (rawJson.Contains("</think>"))
+            var instructions = "You are a procurement analysis agent. Extract vendor and item data accurately.";
+            AIAgent agent = chatClient.AsAIAgent(instructions);
+
+
+            AgentResponse<AgentSyncProposalDto> response = await agent.RunAsync<AgentSyncProposalDto>(
+            text,
+            cancellationToken: cancellationToken);
+
+            if (response.Result == null)
             {
-                rawJson = rawJson.Split("</think>").Last();
+                return Result.Failure<AgentSyncProposalDto>(new Error("Agent.EmptyResponse", "AI returned no data."));
             }
 
-            
-            rawJson = rawJson.Trim().Replace("```json", "").Replace("```", "").Trim();
-
-            var jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            };
-
-            var proposal = JsonSerializer.Deserialize<AgentSyncProposalDto>(rawJson, jsonOptions);
-
-            return proposal is not null
-                ? Result.Success(proposal)
-                : Result.Failure<AgentSyncProposalDto>(new Error("Agent.Deserialization", "Failed to parse AI response."));
+            return Result.Success(response.Result);
         }
         catch (Exception ex)
         {
