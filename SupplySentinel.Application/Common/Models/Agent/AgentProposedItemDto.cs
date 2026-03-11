@@ -1,9 +1,6 @@
-﻿using SupplySentinel.Domain.ValueObjects;
-using SupplySentinel.Infrastructure.Prompts;
-using System;
-using System.Collections.Generic;
+﻿using SupplySentinel.Application.Common.Constants;
+using SupplySentinel.Domain.ValueObjects;
 using System.ComponentModel;
-using System.Text;
 
 namespace SupplySentinel.Application.Common.Models.Agent
 {

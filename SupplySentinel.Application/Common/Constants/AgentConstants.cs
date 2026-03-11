@@ -1,4 +1,4 @@
-namespace SupplySentinel.Infrastructure.Prompts;
+namespace SupplySentinel.Application.Common.Constants;
 
 public static class AgentConstants
 {
