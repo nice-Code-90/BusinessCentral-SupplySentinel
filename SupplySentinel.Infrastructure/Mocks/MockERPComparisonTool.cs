@@ -8,14 +8,25 @@ namespace SupplySentinel.Infrastructure.Mocks;
 
 public class MockERPComparisonTool : IERPComparisonTool
 {
+    private readonly List<Item> _items =
+    [
+        new(Guid.NewGuid(), "C-1001", "Standard Keyboard", "PCS"),
+        new(Guid.NewGuid(), "C-1002", "Optical Mouse", "PCS"),
+        new(Guid.NewGuid(), "SKU-123", "Mock Item Description", "PCS")
+    ];
+
+    public Task<Result<List<Item>>> GetItemsAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Result.Success(_items));
+    }
+
     public Task<Result<Item>> GetItemBySkuAsync(string sku, CancellationToken cancellationToken = default)
     {
-        if (sku == "SKU-123")
-        {
-            var item = new Item(Guid.NewGuid(), "SKU-123", "Mock Item Description", "PCS");
-            return Task.FromResult(Result.Success(item));
-        }
-        return Task.FromResult(Result.Failure<Item>(ItemErrors.NotFound));
+        var item = _items.FirstOrDefault(i => i.Sku == sku);
+
+        return item is not null
+            ? Task.FromResult(Result.Success(item))
+            : Task.FromResult(Result.Failure<Item>(ItemErrors.NotFound));
     }
 
     public Task<Result<Vendor>> GetVendorByErpIdAsync(string erpId, CancellationToken cancellationToken = default)

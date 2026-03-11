@@ -68,16 +68,18 @@ public class AgentService : IAgentService
         }
 
         var proposalDto = proposalResult.Value;
+        Console.WriteLine($"[AgentService] AI found {proposalDto.Items.Count} items in the document.");
         var conflicts = new List<PriceConflict>();
 
         
         foreach (var proposedItem in proposalDto.Items)
         {
+            Console.WriteLine($"[AgentService] Checking SKU: {proposedItem.Sku}");
             var erpItemResult = await _erpComparer.GetItemBySkuAsync(proposedItem.Sku, cancellationToken);
 
             if (erpItemResult.IsFailure)
             {
-                
+                Console.WriteLine($"[AgentService] SKU search failed for '{proposedItem.Sku}': {erpItemResult.Error.Name}");
                 continue;
             }
 
@@ -89,7 +91,7 @@ public class AgentService : IAgentService
             
             if (proposedItem.Price.Amount != erpPrice.Amount && proposedItem.Price.Amount > 0)
             {
-            
+                Console.WriteLine($"[AgentService] Conflict detected for SKU: {proposedItem.Sku}. Proposed: {proposedItem.Price.Amount}, ERP: {erpPrice.Amount}");
                 var conflict = new PriceConflict(
                     Guid.NewGuid(),
                     erpItem.Id,

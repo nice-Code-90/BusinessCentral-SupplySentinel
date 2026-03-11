@@ -20,6 +20,29 @@ public class ERPComparisonTool : IERPComparisonTool
         _httpClient = httpClient;
     }
 
+    public async Task<Result<List<Item>>> GetItemsAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("items", cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return Result.Failure<List<Item>>(new Error("BC.API", $"Failed to retrieve items. Status: {response.StatusCode}"));
+        }
+
+        var odataResponse = await response.Content.ReadFromJsonAsync<ODataResponse<BCItem>>(_jsonSerializerOptions, cancellationToken);
+
+        if (odataResponse is null || odataResponse.Value is null)
+        {
+            return Result.Success(new List<Item>());
+        }
+
+        var items = odataResponse.Value
+            .Select(bcItem => new Item(bcItem.Id, bcItem.Number, bcItem.DisplayName, bcItem.BaseUnitOfMeasureCode ?? "PCS"))
+            .ToList();
+
+        return Result.Success(items);
+    }
+
     public async Task<Result<Item>> GetItemBySkuAsync(string sku, CancellationToken cancellationToken = default)
     {
         

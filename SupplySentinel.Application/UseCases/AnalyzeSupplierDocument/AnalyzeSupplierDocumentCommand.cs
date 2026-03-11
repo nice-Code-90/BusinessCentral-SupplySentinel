@@ -4,5 +4,4 @@ using SupplySentinel.Domain.Entities;
 
 namespace SupplySentinel.Application.UseCases.AnalyzeSupplierDocument;
 
-public record AnalyzeSupplierDocumentCommand(byte[] DocumentContent)
-    : IRequest<Result<List<PriceConflict>>>;
+public record AnalyzeSupplierDocumentCommand(byte[] DocumentContent) : IRequest<Result<List<PriceConflict>>>;
