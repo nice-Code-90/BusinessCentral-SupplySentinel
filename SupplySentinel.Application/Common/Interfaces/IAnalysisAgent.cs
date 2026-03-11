@@ -5,6 +5,6 @@ namespace SupplySentinel.Application.Common.Interfaces;
 
 public interface IAnalysisAgent
 {
-    // Nem AIAgent-et adunk vissza, hanem rögtön az eredményt!
+    
     Task<Result<AgentSyncProposalDto>> GetProposalFromTextAsync(string text, CancellationToken ct);
 }

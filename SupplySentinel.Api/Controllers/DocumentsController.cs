@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SupplySentinel.Application.UseCases.Documents;
+using SupplySentinel.Application.UseCases.AnalyzeSupplierDocument;
+using SupplySentinel.Application.UseCases.UploadDocument;
 using SupplySentinel.Domain.Abstractions;
 
 namespace SupplySentinel.Api.Controllers;

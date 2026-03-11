@@ -50,7 +50,9 @@ public class AnalysisController : ControllerBase
             using var memoryStream = new MemoryStream();
             await file.CopyToAsync(memoryStream, ct);
 
-            var command = new AnalyzeSupplierDocumentCommand(memoryStream.ToArray());
+            var command = new AnalyzeSupplierDocumentCommand(
+                DocumentId: Guid.NewGuid(),
+                DocumentContent: memoryStream.ToArray());
             var result = await _sender.Send(command, ct);
 
             return result.IsSuccess
