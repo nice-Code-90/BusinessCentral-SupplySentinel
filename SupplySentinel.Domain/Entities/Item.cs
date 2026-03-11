@@ -7,11 +7,16 @@ public class Item
     public string Description { get; private set; } = string.Empty;
     public string UnitOfMeasure { get; private set; } = string.Empty;
 
-    public Item(Guid id, string sku, string description, string uom)
+    
+    public decimal UnitCost { get; private set; }
+
+    
+    public Item(Guid id, string sku, string description, string uom, decimal unitCost)
     {
         Id = id;
         Sku = sku;
         Description = description;
         UnitOfMeasure = uom;
+        UnitCost = unitCost;
     }
 }

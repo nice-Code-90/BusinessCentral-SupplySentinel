@@ -12,7 +12,7 @@ public class ERPComparisonTool : IERPComparisonTool
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
     private record ODataResponse<T>(List<T> Value);
-    private record BCItem(Guid Id, string Number, string DisplayName, string BaseUnitOfMeasureCode);
+    private record BCItem(Guid Id, string Number, string DisplayName, string BaseUnitOfMeasureCode, decimal UnitCost );
     private record BCVendor(Guid Id, string Number, string DisplayName, string CurrencyCode);
 
     public ERPComparisonTool(HttpClient httpClient)
@@ -37,7 +37,7 @@ public class ERPComparisonTool : IERPComparisonTool
         }
 
         var items = odataResponse.Value
-            .Select(bcItem => new Item(bcItem.Id, bcItem.Number, bcItem.DisplayName, bcItem.BaseUnitOfMeasureCode ?? "PCS"))
+            .Select(bcItem => new Item(bcItem.Id, bcItem.Number, bcItem.DisplayName, bcItem.BaseUnitOfMeasureCode ?? "PCS", bcItem.UnitCost))
             .ToList();
 
         return Result.Success(items);
@@ -65,7 +65,7 @@ public class ERPComparisonTool : IERPComparisonTool
             return Result.Failure<Item>(ItemErrors.NotFound);
         }
 
-        var item = new Item(bcItem.Id, bcItem.Number, bcItem.DisplayName, bcItem.BaseUnitOfMeasureCode ?? "PCS");
+        var item = new Item(bcItem.Id, bcItem.Number, bcItem.DisplayName, bcItem.BaseUnitOfMeasureCode ?? "PCS", bcItem.UnitCost);
         return Result.Success(item);
     }
 

@@ -85,10 +85,9 @@ public class AgentService : IAgentService
 
             var erpItem = erpItemResult.Value;
 
-            // TODO: real BY price fetching from ERP, for now we use a dummy price for comparison
-            var erpPrice = new Money(100.0m, "EUR"); 
+            var erpPrice = new Money(erpItem.UnitCost, "EUR");
 
-            
+
             if (proposedItem.Price.Amount != erpPrice.Amount && proposedItem.Price.Amount > 0)
             {
                 Console.WriteLine($"[AgentService] Conflict detected for SKU: {proposedItem.Sku}. Proposed: {proposedItem.Price.Amount}, ERP: {erpPrice.Amount}");

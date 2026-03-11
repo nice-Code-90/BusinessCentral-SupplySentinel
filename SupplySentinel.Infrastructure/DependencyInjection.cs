@@ -12,7 +12,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IAgentService, AgentService>();
 
-        services.AddScoped<IDocumentReaderTool, MockDocumentReaderTool>();
+        services.AddScoped<IDocumentReaderTool, PdfDocumentReaderTool>();
         services.AddScoped<IERPComparisonTool, MockERPComparisonTool>();
         services.AddScoped<IBCDataSyncTool, MockBCDataSyncTool>();
         
