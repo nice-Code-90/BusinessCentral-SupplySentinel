@@ -24,12 +24,7 @@ public static class DependencyInjection
         .AddHttpMessageHandler<AuthenticationHandler>();
 
 
-        services.AddHttpClient<IERPComparisonTool, ERPComparisonTool>((serviceProvider, client) =>
-        {
-            var options = serviceProvider.GetRequiredService<IOptions<BusinessCentralOptions>>().Value;
-            client.BaseAddress = new Uri(options.FullApiUrl);
-        })
-        .AddHttpMessageHandler<AuthenticationHandler>();
+        
 
         return services;
     }
