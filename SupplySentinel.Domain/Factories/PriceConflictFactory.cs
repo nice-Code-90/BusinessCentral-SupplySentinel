@@ -8,23 +8,22 @@ public static class PriceConflictFactory
     public static PriceConflict? Create(
         Item erpItem,
         Money proposedPrice,
+        Money currentErpPrice,
         Guid vendorId)
     {
-        var erpPrice = new Money(erpItem.UnitCost, "EUR"); // Assuming EUR for now
-
-        if (proposedPrice.Amount == erpPrice.Amount || proposedPrice.Amount <= 0)
+        if (proposedPrice.Amount == currentErpPrice.Amount || proposedPrice.Amount <= 0)
         {
             return null;
         }
 
         decimal variance;
-        if (erpPrice.Amount == 0 && proposedPrice.Amount > 0)
+        if (currentErpPrice.Amount == 0 && proposedPrice.Amount > 0)
         {
             variance = 100.0m;
         }
-        else if (erpPrice.Amount != 0)
+        else if (currentErpPrice.Amount != 0)
         {
-            variance = ((proposedPrice.Amount - erpPrice.Amount) / erpPrice.Amount) * 100;
+            variance = ((proposedPrice.Amount - currentErpPrice.Amount) / currentErpPrice.Amount) * 100;
         }
         else
         {
@@ -36,7 +35,7 @@ public static class PriceConflictFactory
             erpItem.Id,
             vendorId,
             proposedPrice,
-            erpPrice,
+            currentErpPrice,
             variance
             );
     }

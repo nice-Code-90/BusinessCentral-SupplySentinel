@@ -2,10 +2,10 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.Configuration;
 using OpenAI;
 using OpenAI.Chat;
+using SupplySentinel.Application.Common.Constants;
 using SupplySentinel.Application.Common.Interfaces;
 using SupplySentinel.Application.Common.Models.Agent;
 using SupplySentinel.Domain.Abstractions;
-using SupplySentinel.Infrastructure.Prompts;
 using System.ClientModel;
 
 namespace SupplySentinel.Infrastructure.Services;

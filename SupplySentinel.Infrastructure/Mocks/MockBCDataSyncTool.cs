@@ -6,7 +6,7 @@ namespace SupplySentinel.Infrastructure.Mocks;
 
 public class MockBCDataSyncTool : IBCDataSyncTool
 {
-    public Task<Result> UpdateItemPriceAsync(Guid itemId, Money newPrice, CancellationToken cancellationToken = default)
+    public Task<Result> UpdateItemPriceAsync(Guid vendorId, Guid itemId, Money newPrice, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(Result.Success());
     }

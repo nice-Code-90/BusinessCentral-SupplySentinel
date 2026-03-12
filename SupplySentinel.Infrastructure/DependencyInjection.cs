@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SupplySentinel.Application.Common.Interfaces;
-
-using SupplySentinel.Infrastructure.Mocks;
+using SupplySentinel.Infrastructure.REST;
 using SupplySentinel.Infrastructure.Services;
 
 namespace SupplySentinel.Infrastructure;
@@ -15,8 +14,8 @@ public static class DependencyInjection
 
         services.AddScoped<IDocumentReaderTool, PdfDocumentReaderTool>();
 
-        services.AddScoped<IBCDataSyncTool, MockBCDataSyncTool>();
         
+
         return services;
     }
 }

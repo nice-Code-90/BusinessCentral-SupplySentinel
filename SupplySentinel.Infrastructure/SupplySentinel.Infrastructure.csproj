@@ -16,11 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SupplySentinel.Application\SupplySentinel.Application.csproj" />
     <ProjectReference Include="..\SupplySentinel.Domain\SupplySentinel.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\Agent\" />
-    <Folder Include="Prompts\" />
+    <ProjectReference Include="..\SupplySentinel.Infrastructure.REST\SupplySentinel.Infrastructure.REST.csproj" />
   </ItemGroup>
 
 </Project>

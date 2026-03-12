@@ -2,7 +2,9 @@ using MediatR;
 using SupplySentinel.Application.Common.Interfaces;
 using SupplySentinel.Domain.Abstractions;
 using SupplySentinel.Domain.Entities;
+using SupplySentinel.Domain.Errors;
 using SupplySentinel.Domain.Factories;
+using SupplySentinel.Domain.ValueObjects;
 
 namespace SupplySentinel.Application.UseCases.AnalyzeSupplierDocument;
 
@@ -42,6 +44,14 @@ public class AnalyzeSupplierDocumentCommandHandler : IRequestHandler<AnalyzeSupp
         }
 
         var proposalDto = proposalResult.Value;
+
+        var vendorResult = await _erpComparer.GetVendorByNameAsync(proposalDto.Vendor.Name, cancellationToken);
+        if (vendorResult.IsFailure)
+        {
+            return Result.Failure<List<PriceConflict>>(VendorErrors.NotFound);
+        }
+        var vendor = vendorResult.Value;
+
         var conflicts = new List<PriceConflict>();
 
         foreach (var proposedItem in proposalDto.Items)
@@ -52,15 +62,27 @@ public class AnalyzeSupplierDocumentCommandHandler : IRequestHandler<AnalyzeSupp
 
             if (erpItemResult.IsFailure)
             {
-             
+                // Item does not exist in ERP, we can't create a price conflict
                 continue;
             }
 
+            var erpItem = erpItemResult.Value;
+            var erpPriceResult = await _erpComparer.GetPurchasePriceAsync(vendor.Id, erpItem.Id, cancellationToken);
             
+            var currentErpPrice = erpPriceResult.IsSuccess 
+                ? erpPriceResult.Value 
+                : new Money(erpItem.UnitCost, vendor.Currency);
+
+            if (erpPriceResult.IsFailure && erpPriceResult.Error.Code == "BC.Api.NotFound")
+            {
+                Console.WriteLine($"[Warning] Vendor-specific price not found for item {erpItem.Sku} and vendor {vendor.Name}. Falling back to item unit cost.");
+            }
+
             var conflict = PriceConflictFactory.Create(
-                erpItem: erpItemResult.Value,
-                proposedPrice: proposedItem.Price,
-                vendorId: Guid.Empty // vendor ID will be implemented in the future when we have vendor information in the proposal DTO
+                erpItem: erpItem,
+                proposedPrice: new Money(proposedItem.Price.Amount, vendor.Currency),
+                currentErpPrice: currentErpPrice,
+                vendorId: vendor.Id 
             );
 
             if (conflict != null)

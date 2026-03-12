@@ -2,6 +2,8 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SupplySentinel.Application.UseCases.AnalyzeSupplierDocument;
 using SupplySentinel.Application.UseCases.GetItems;
+using SupplySentinel.Application.UseCases.GetVendors;
+using SupplySentinel.Application.UseCases.ResolvePriceConflict;
 using SupplySentinel.Domain.Abstractions;
 
 namespace SupplySentinel.Api.Controllers;
@@ -12,19 +14,16 @@ public class AnalysisController : ControllerBase
 {
     private readonly ISender _sender;
 
-    
     public AnalysisController(ISender sender)
     {
         _sender = sender;
     }
 
-    
     [HttpGet("items")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetItems(CancellationToken cancellationToken)
     {
-        
         var result = await _sender.Send(new GetItemsQuery(), cancellationToken);
 
         return result.IsSuccess
@@ -32,7 +31,18 @@ public class AnalysisController : ControllerBase
             : BadRequest(result.Error);
     }
 
-    
+    [HttpGet("vendors")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetVendors(CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetVendorsQuery(), cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(result.Error);
+    }
+
     [HttpPost("analyze")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
@@ -52,7 +62,6 @@ public class AnalysisController : ControllerBase
             using var memoryStream = new MemoryStream();
             await file.CopyToAsync(memoryStream, ct);
 
-            
             var command = new AnalyzeSupplierDocumentCommand(
                 DocumentId: Guid.NewGuid(),
                 DocumentContent: memoryStream.ToArray());
@@ -65,8 +74,19 @@ public class AnalysisController : ControllerBase
         }
         catch (OperationCanceledException)
         {
-     
             return StatusCode(StatusCodes.Status499ClientClosedRequest);
         }
+    }
+
+    [HttpPost("resolve")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResolveConflict([FromBody] ResolvePriceConflictCommand command, CancellationToken ct)
+    {
+        var result = await _sender.Send(command, ct);
+
+        return result.IsSuccess
+            ? Ok(new { Message = "Price successfully synchronized with Business Central." })
+            : BadRequest(result.Error);
     }
 }
